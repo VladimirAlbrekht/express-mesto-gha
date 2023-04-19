@@ -15,18 +15,11 @@ mongoose.connect('mongodb://localhost:27017/mestobd',
     };
     next();
   });
-
-  // controllers/cards.js
-  module.exports.createCard = (req, res) => {
+ module.exports.createCard = (req, res) => {
     const { name, link } = req.body;
     const userId = req.user._id; // получаем _id пользователя из объекта req.user
-
-    // создаем карточку с использованием userId
   };
 
-app.get('/', function (req, res) {
-  res.send('Hello Wodddrld!');
-});
 
 // добавляем обработку JSON в body запроса
 app.use(express.json());

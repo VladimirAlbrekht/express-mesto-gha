@@ -11,6 +11,7 @@ mongoose.connect('mongodb://localhost:27017/mestobd', { useNewUrlParser: true, u
 
 // подключаем мидлвары, роуты и всё остальное...
   app.use((req, res, next) => {
+    console.log(res);
     req.user = {
       _id: "643ff4831e6c641ac2d5648d" // вставьте сюда _id созданного в предыдущем пункте пользователя
     };
@@ -18,13 +19,12 @@ mongoose.connect('mongodb://localhost:27017/mestobd', { useNewUrlParser: true, u
   });
 
   // controllers/cards.js
-  module.exports.createCard = (req, res) => {
+/*   module.exports.createCard = (req, res) => {
     const { name, link } = req.body;
     const userId = req.user._id; // получаем _id пользователя из объекта req.user
 
     // создаем карточку с использованием userId
-  };
-
+  }; */
 
 // добавляем обработку JSON в body запроса
 app.use(express.json());

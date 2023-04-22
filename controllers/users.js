@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const mongoose = require('mongoose');
 
 const getUsers = (req, res) => {
   User.find({})
@@ -7,10 +8,22 @@ const getUsers = (req, res) => {
 };
 
 const getUserById = (req, res) => {
-  User.findById(req.params.userId)
+  const userId = req.params.userId;
+  console.log('getUserById called. User ID:', userId);
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).send({ message: 'Некорректный идентификатор пользователя' });
+  }
+
+  // Если идентификатор пользователя совпадает с текущим пользователем,
+  // устанавливаем req.user
+  if (req.user._id.toString() === userId) {
+    req.user = { _id: userId };
+  }
+
+  User.findById(userId)
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: 'User not found' });
+        return res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
       }
       return res.send(user);
     })
@@ -33,7 +46,7 @@ const updateUser = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: 'User not found' });
+        return res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
       }
       return res.send(user);
     })
@@ -49,11 +62,11 @@ const updateAvatar = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: 'User not found' });
+        return res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
       }
       return res.send(user);
     })
     .catch((err) => res.status(500).send({ message: err.message }));
 };
 
-module.exports = { getUsers, getUserById, createUser, updateUser, updateAvatar};
+module.exports = { getUsers, getUserById, createUser, updateUser, updateAvatar };

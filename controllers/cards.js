@@ -63,7 +63,7 @@ const likeCard = (req, res) => {
       res.send(card);
     })
     .catch(err => {
-      res.status(500).send({ message: err.message });
+      res.status(400).send({ message: err.message });
     });
 };
 
@@ -82,7 +82,7 @@ const dislikeCard = (req, res) => {
       res.send(card);
     })
     .catch(err => {
-      res.status(500).send({ message: err.message });
+      res.status(400).send({ message: err.message });
     });
 };
 

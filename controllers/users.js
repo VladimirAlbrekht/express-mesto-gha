@@ -1,46 +1,50 @@
-const User = require('../models/user');
 const mongoose = require('mongoose');
+const { NOT_FOUND, BAD_REQUEST, INTERNAL_SERVER_ERROR } = require('../errors/errors');
+const User = require('../models/user');
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.send(users))
-    .catch((err) => res.status(500).send({ message: err.message }));
+const INVALID_USER_ID_ERROR = 'Некорректный идентификатор пользователя';
+const INTERNAL_SERVER_ERROR_MESSAGE = 'Внутренняя ошибка сервера';
+
+const getUsers = async (req, res) => {
+  try {
+    const users = await User.find({});
+    res.send(users);
+  } catch (err) {
+    res.status(INTERNAL_SERVER_ERROR).send({ message: INTERNAL_SERVER_ERROR_MESSAGE });
+  }
 };
 
 const getUserById = (req, res) => {
-  const userId = req.params.userId;
-  console.log('getUserById called. User ID:', userId);
+  const { userId } = req.params;
   if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return res.status(400).send({ message: 'Некорректный идентификатор пользователя' });
+    return res.status(BAD_REQUEST).send({ message: INVALID_USER_ID_ERROR });
   }
 
-  // Если идентификатор пользователя совпадает с текущим пользователем,
-  // устанавливаем req.user
-  if (req.user._id.toString() === userId) {
-    req.user = { _id: userId };
-  }
-
-  User.findById(userId)
+  return User.findById(userId)
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
+        return res.status(NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден' });
       }
       return res.send(user);
     })
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch((err) => res.status(INTERNAL_SERVER_ERROR).json({
+      message: INTERNAL_SERVER_ERROR_MESSAGE,
+      err,
+    }));
 };
-
 
 const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+  return User.create({ name, about, avatar })
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
-      } else {
-        res.status(500).send({ message: err.message });
+        return res.status(BAD_REQUEST).send({ message: err.message });
       }
+      return res.status(INTERNAL_SERVER_ERROR).json({
+        message: INTERNAL_SERVER_ERROR_MESSAGE,
+        err,
+      });
     });
 };
 
@@ -49,21 +53,13 @@ const updateUser = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { name, about },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   )
-    .then((user) => {
-      if (!user) {
-        return res.status(404).json({ message: 'Запрашиваемый пользователь не найден' });
-      }
-      return res.json(user);
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-      res.status(400).json({ message: err.message });
-    } else {
-      res.status(500).json({ message: err.message });
-    }
-  });
+    .then((user) => (user ? res.json(user) : res.status(NOT_FOUND).json({ message: 'Запрашиваемый пользователь не найден' })))
+    .catch((err) => res.status(INTERNAL_SERVER_ERROR).json({
+      message: INTERNAL_SERVER_ERROR_MESSAGE,
+      err,
+    }));
 };
 
 const updateAvatar = (req, res) => {
@@ -71,20 +67,19 @@ const updateAvatar = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { avatar },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   )
-    .then((user) => {
-      if (!user) {
-        return res.status(404).json({ message: 'Запрашиваемый пользователь не найден' });
-      }
-      return res.json(user);
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).json({ message: err.message });
-      } else {
-        res.status(500).json({ message: err.message });
-      }
-    });
+    .then((user) => (user ? res.json(user) : res.status(NOT_FOUND).json({ message: 'Запрашиваемый пользователь не найден' })))
+    .catch((err) => res.status(INTERNAL_SERVER_ERROR).json({
+      message: INTERNAL_SERVER_ERROR_MESSAGE,
+      err,
+    }));
 };
-module.exports = { getUsers, getUserById, createUser, updateUser, updateAvatar };
+
+module.exports = {
+  getUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  updateAvatar,
+};

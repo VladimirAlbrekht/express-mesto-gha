@@ -12,7 +12,6 @@ app.use(express.json());
 
 // добавляем middleware для установки заголовка Content-Type
 app.use((req, res, next) => {
-  res.setHeader('Content-Type', 'application/json');
   req.user = {
     _id: "643ff4831e6c641ac2d5648d" // вставьте сюда _id созданного в предыдущем пункте пользователя
   };

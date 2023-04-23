@@ -57,7 +57,13 @@ const updateUser = (req, res) => {
       }
       return res.send(user);
     })
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+      res.status(400).send({ message: err.message });
+    } else {
+      res.status(500).send({ message: err.message });
+    }
+  });
 };
 
 const updateAvatar = (req, res) => {

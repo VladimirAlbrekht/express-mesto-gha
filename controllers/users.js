@@ -61,11 +61,19 @@ const updateUser = (req, res) => {
     { name, about },
     { new: true, runValidators: true },
   )
-    .then((user) => (user ? res.json(user) : res.status(NOT_FOUND).json({ message: 'Запрашиваемый пользователь не найден' })))
-    .catch((err) => res.status(INTERNAL_SERVER_ERROR).json({
-      message: INTERNAL_SERVER_ERROR_MESSAGE,
-      err,
-    }));
+    .then((user) => {
+      if (!user) {
+        return res.status(NOT_FOUND).json({ message: 'Запрашиваемый пользователь не найден' });
+      }
+      return res.json(user);
+    })
+    .catch((err) => {
+      console.error(err);
+      return res.status(INTERNAL_SERVER_ERROR).json({
+        message: INTERNAL_SERVER_ERROR_MESSAGE,
+        err,
+      });
+    });
 };
 
 const updateAvatar = (req, res) => {

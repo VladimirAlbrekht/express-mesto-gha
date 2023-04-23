@@ -53,15 +53,15 @@ const updateUser = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
+        return res.status(404).json({ message: 'Запрашиваемый пользователь не найден' });
       }
-      return res.send(user);
+      return res.json(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-      res.status(400).send({ message: err.message });
+      res.status(400).json({ message: err.message });
     } else {
-      res.status(500).send({ message: err.message });
+      res.status(500).json({ message: err.message });
     }
   });
 };
@@ -75,11 +75,16 @@ const updateAvatar = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
+        return res.status(404).json({ message: 'Запрашиваемый пользователь не найден' });
       }
-      return res.send(user);
+      return res.json(user);
     })
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).json({ message: err.message });
+      } else {
+        res.status(500).json({ message: err.message });
+      }
+    });
 };
-
 module.exports = { getUsers, getUserById, createUser, updateUser, updateAvatar };

@@ -12,23 +12,22 @@ app.use(express.json());
 
 // добавляем middleware для установки заголовка Content-Type
 app.use((req, res, next) => {
+  res.setHeader('Content-Type', 'application/json');
+
+  next();
+});
+
+// подключаемся к серверу mongo
+mongoose.connect('mongodb://localhost:27017/mestobd', { useNewUrlParser: true, useUnifiedTopology: true });
+
+// подключаем мидлвары, роуты и всё остальное...
+app.use((req, res, next) => {
+  console.log(res);
   req.user = {
     _id: "643ff4831e6c641ac2d5648d" // вставьте сюда _id созданного в предыдущем пункте пользователя
   };
   next();
 });
-
-
-// подключаемся к серверу mongo
-mongoose.connect('mongodb://localhost:27017/mestobd', { useNewUrlParser: true, useUnifiedTopology: true });
-
-// Обработка неправильного пути
-app.use((req, res, next) => {
-  const error = new Error('Запрашиваемый ресурс не найден');
-  error.status = 404;
-  next(error);
-});
-
 
 // подключаем маршруты
 app.use('/', usersRouter);

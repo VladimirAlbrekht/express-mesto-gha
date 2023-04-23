@@ -19,8 +19,16 @@ app.use((req, res, next) => {
   next();
 });
 
+
 // подключаемся к серверу mongo
 mongoose.connect('mongodb://localhost:27017/mestobd', { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Обработка неправильного пути
+app.use((req, res, next) => {
+  const error = new Error('Запрашиваемый ресурс не найден');
+  error.status = 404;
+  next(error);
+});
 
 
 // подключаем маршруты

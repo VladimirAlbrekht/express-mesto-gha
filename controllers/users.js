@@ -50,12 +50,7 @@ const createUser = (req, res) => {
 
 const updateUser = (req, res) => {
   const { name, about } = req.body;
-  if (name.length < 2 || name.length > 30) {
-    return res.status(BAD_REQUEST).json({ message: 'Поле name должно содержать от 2 до 30 символов' });
-  }
-  if (about && (about.length < 2 || about.length > 30)) {
-    return res.status(BAD_REQUEST).json({ message: 'Поле about должно содержать от 2 до 30 символов' });
-  }
+
   User.findByIdAndUpdate(
     req.user._id,
     { name, about },
@@ -63,17 +58,18 @@ const updateUser = (req, res) => {
   )
     .then((user) => {
       if (user) {
-        return res.json(user);
+        res.send(user);
+      } else {
+        res.status(NOT_FOUND).json({ message: 'Пользователь не найден' });
       }
-      return res.status(NOT_FOUND).json({ message: 'Пользователь не найден' });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(BAD_REQUEST).json({ message: 'Переданы некорректные данные' });
+        res.status(BAD_REQUEST).json({ message: 'Длина сообщения должна быть более 2 и менее 30 символов' });
+      } else {
+        res.status(INTERNAL_SERVER_ERROR).json({ message: 'На сервере произошла ошибка' });
       }
-      return res.status(INTERNAL_SERVER_ERROR).json({ message: INTERNAL_SERVER_ERROR_MESSAGE });
     });
-  return null;
 };
 
 const updateAvatar = (req, res) => {

@@ -62,18 +62,18 @@ const updateUser = (req, res) => {
     { new: true, runValidators: true },
   )
     .then((user) => {
-      if (!user) {
-        return res.status(NOT_FOUND).json({ message: 'Запрашиваемый пользователь не найден' });
+      if (user) {
+        return res.json(user);
       }
-      return res.json(user);
+      return res.status(NOT_FOUND).json({ message: 'Пользователь не найден' });
     })
     .catch((err) => {
-      console.error(err);
-      return res.status(INTERNAL_SERVER_ERROR).json({
-        message: INTERNAL_SERVER_ERROR_MESSAGE,
-        err,
-      });
+      if (err.name === 'ValidationError') {
+        return res.status(BAD_REQUEST).json({ message: 'Переданы некорректные данные' });
+      }
+      return res.status(500).json({ message: `Ошибка на сервере: ${err}` });
     });
+  return null;
 };
 
 const updateAvatar = (req, res) => {

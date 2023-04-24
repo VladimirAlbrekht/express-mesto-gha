@@ -71,7 +71,7 @@ const updateUser = (req, res) => {
       if (err.name === 'ValidationError') {
         return res.status(BAD_REQUEST).json({ message: 'Переданы некорректные данные' });
       }
-      return res.status(500).json({ message: `Ошибка на сервере: ${err}` });
+      return res.status(BAD_REQUEST).json({ message: `Ошибка на сервере: ${err}` });
     });
   return null;
 };

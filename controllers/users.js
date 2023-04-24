@@ -53,7 +53,7 @@ const updateUser = (req, res) => {
   if (name.length < 2 || name.length > 30) {
     return res.status(BAD_REQUEST).json({ message: 'Поле name должно содержать от 2 до 30 символов' });
   }
-  if (about.length < 2 || about.length > 30) {
+  if (about && (about.length < 2 || about.length > 30)) {
     return res.status(BAD_REQUEST).json({ message: 'Поле about должно содержать от 2 до 30 символов' });
   }
   User.findByIdAndUpdate(

@@ -51,8 +51,13 @@ const deleteCard = (req, res) => {
 };
 
 const likeCard = (req, res) => {
+  const { cardId } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(cardId)) {
+    return res.status(errors.BAD_REQUEST).send({ message: 'Некорректный формат id карточки' });
+  }
+
   Card.findByIdAndUpdate(
-    req.params.cardId,
+    cardId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
@@ -65,13 +70,19 @@ const likeCard = (req, res) => {
       return res.status(errors.OK).send(card);
     })
     .catch((err) => {
-      res.status(errors.INTERNAL_SERVER_ERROR).send({ message: `Ошибка при обновлении данных карточки: ${err}` });
+      res.status(errors.INTERNAL_SERVER_ERROR).send({ message: err.message });
     });
+  return null;
 };
 
 const dislikeCard = (req, res) => {
+  const { cardId } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(cardId)) {
+    return res.status(errors.BAD_REQUEST).send({ message: 'Некорректный формат id карточки' });
+  }
+
   Card.findByIdAndUpdate(
-    req.params.cardId,
+    cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
   )
@@ -84,8 +95,9 @@ const dislikeCard = (req, res) => {
       return res.status(errors.OK).send(card);
     })
     .catch((err) => {
-      res.status(errors.INTERNAL_SERVER_ERROR).send({ message: `Ошибка при обновлении данных карточки: ${err}` });
+      res.status(errors.INTERNAL_SERVER_ERROR).send({ message: err.message });
     });
+  return null;
 };
 
 module.exports = {

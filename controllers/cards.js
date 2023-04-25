@@ -65,7 +65,7 @@ const likeCard = (req, res) => {
       return res.status(errors.OK).send(card);
     })
     .catch((err) => {
-      res.status(errors.BAD_REQUEST).send({ message: err.message });
+      res.status(errors.INTERNAL_SERVER_ERROR).send({ message: `Ошибка при обновлении данных карточки: ${err}` });
     });
 };
 
@@ -84,7 +84,7 @@ const dislikeCard = (req, res) => {
       return res.status(errors.OK).send(card);
     })
     .catch((err) => {
-      res.status(errors.BAD_REQUEST).send({ message: err.message });
+      res.status(errors.INTERNAL_SERVER_ERROR).send({ message: `Ошибка при обновлении данных карточки: ${err}` });
     });
 };
 

@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const {
+  login,
   getUsers,
   getUserById,
   createUser,
@@ -13,13 +14,14 @@ router.get('/', getUsers);
 // возвращает пользователя по _id
 router.get('/:userId', getUserById);
 
-// создает пользователя
-router.post('/', createUser);
-
 // обновляет данные пользователя
 router.patch('/me', updateUser);
 
+
 // обновляет аватар
 router.patch('/me/avatar', updateAvatar);
+
+router.post('/signin', login);
+router.post('/signup', createUser);
 
 module.exports = router;

@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const errors = require('./errors/errors'); // добавляем модуль ошибок
+const {checkAuth} = require('./middlewares/auth');
 
 const app = express();
 
@@ -18,17 +19,25 @@ app.use((req, res, next) => {
 // Подключаемся к серверу MongoDB
 mongoose.connect('mongodb://localhost:27017/mestobd', { useNewUrlParser: true, useUnifiedTopology: true });
 
-// Добавляем middleware для установки объекта пользователя в объект запроса
-app.use((req, res, next) => {
-  req.user = {
-    _id: '643ff4831e6c641ac2d5648d', // Используем одинарные кавычки для значений строк
-  };
-  next();
-});
 
 // Подключаем маршруты
-app.use('/users', usersRouter);
+app.use('/users', checkAuth, usersRouter);
 app.use('/cards', cardsRouter);
+
+app.post('/signup', (req, res) => {
+  // здесь должна быть логика создания нового пользователя
+  const user = {
+    name: req.body.name,
+    email: req.body.email,
+    password: req.body.password,
+  };
+
+  // устанавливаем заголовок Content-Type
+  res.set('Content-Type', 'application/json');
+
+  // отправляем ответ клиенту
+  res.json({ message: 'User created successfully', user });
+});
 
 // Middleware для обработки ошибок 404
 app.use((req, res, next) => {
@@ -42,6 +51,7 @@ app.use((err, req, res, next) => {
   res.status(errors.INTERNAL_SERVER_ERROR).json({ message: 'Внутренняя ошибка сервера' });
   next();
 });
+
 
 app.listen(3000, () => {
   console.log('Server started on port 3000');

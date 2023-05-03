@@ -36,18 +36,25 @@ const deleteCard = (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(cardId)) {
     return res.status(errors.BAD_REQUEST).send({ message: 'Некорректный формат id карточки' });
   }
-  Card.findByIdAndRemove(cardId)
+  Card.findById(cardId)
     .then((card) => {
       if (!card) {
         return res.status(errors.NOT_FOUND).send({ message: 'Карточка не найдена' });
       }
-      return res.status(errors.OK).send({ message: 'Карточка успешно удалена', card });
+      if (card.owner.toString() !== req.user._id) {
+        return res.status(errors.FORBIDDEN).send({ message: 'Вы не можете удалить карточку другого пользователя' });
+      }
+      return Card.findByIdAndRemove(cardId)
+        .then((deletedCard) => {
+          return res.status(errors.OK).send({
+            message: 'Карточка успешно удалена',
+            deletedCard,
+          });
+        });
     })
     .catch((err) => {
       res.status(errors.INTERNAL_SERVER_ERROR).send({ message: `Ошибка при удалении карточки: ${err}` });
     });
-
-  return null;
 };
 
 const likeCard = (req, res) => {

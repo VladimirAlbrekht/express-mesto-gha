@@ -1,11 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const errors = require('./errors/errors'); // добавляем модуль ошибок
-const {checkAuth} = require('./middlewares/auth');
+const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
+app.use(cookieParser());
 
 // Добавляем middleware для обработки JSON в body запроса
 app.use(express.json());
@@ -19,25 +21,9 @@ app.use((req, res, next) => {
 // Подключаемся к серверу MongoDB
 mongoose.connect('mongodb://localhost:27017/mestobd', { useNewUrlParser: true, useUnifiedTopology: true });
 
-
 // Подключаем маршруты
-app.use('/users', checkAuth, usersRouter);
+app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
-
-app.post('/signup', (req, res) => {
-  // здесь должна быть логика создания нового пользователя
-  const user = {
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-  };
-
-  // устанавливаем заголовок Content-Type
-  res.set('Content-Type', 'application/json');
-
-  // отправляем ответ клиенту
-  res.json({ message: 'User created successfully', user });
-});
 
 // Middleware для обработки ошибок 404
 app.use((req, res, next) => {
@@ -52,6 +38,8 @@ app.use((err, req, res, next) => {
   next();
 });
 
+// Middleware для обработки ошибок
+app.use(errorHandler);
 
 app.listen(3000, () => {
   console.log('Server started on port 3000');

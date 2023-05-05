@@ -113,4 +113,5 @@ module.exports = {
   deleteCard,
   likeCard,
   dislikeCard,
+  deleteCard,
 };

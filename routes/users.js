@@ -1,27 +1,27 @@
 const router = require('express').Router();
+const { checkAuth } = require('../middlewares/auth');
+
 const {
+  createUser,
   login,
   getUsers,
   getUserById,
-  createUser,
+  getCurrentUser,
   updateUser,
   updateAvatar,
+  deleteCard,
 } = require('../controllers/users');
 
-// возвращает всех пользователей
-router.get('/', getUsers);
-
-// возвращает пользователя по _id
-router.get('/:userId', getUserById);
-
-// обновляет данные пользователя
-router.patch('/me', updateUser);
-
-
-// обновляет аватар
-router.patch('/me/avatar', updateAvatar);
-
-router.post('/signin', login);
+// открытые маршруты
 router.post('/signup', createUser);
+router.post('/signin', login);
+
+// защищенные маршруты
+router.use(checkAuth);
+router.get('/', getUsers);
+router.get('/me', getCurrentUser);
+router.patch('/me', updateUser);
+router.patch('/me/avatar', updateAvatar);
+router.get('/:userId', getUserById);
 
 module.exports = router;

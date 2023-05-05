@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 
-// Создаем схему пользователя
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -18,6 +17,7 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String,
     required: true,
+    match: /^(https?:\/\/)(www\.)?[\w-]+(\.[\w-]+)+([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?#?$/,
   },
   email: {
     type: String,
@@ -32,9 +32,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 8,
-    select: false, // устанавливаем select: false для поля password
+    select: false,
   },
 });
 
+const User = mongoose.model('user', userSchema);
 
-module.exports = mongoose.model('user', userSchema);
+module.exports = User;

@@ -1,6 +1,6 @@
 const http2 = require('http2');
 
-function errorHandler(err, req, res) {
+function errorHandler(err, req, res, next) {
   // Определяем статусный код ошибки
   const statusCode = err.statusCode || http2.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR;
 
@@ -9,6 +9,9 @@ function errorHandler(err, req, res) {
 
   // Отправляем клиенту ответ с ошибкой
   res.status(statusCode).json({ message });
+
+  // Передаем управление следующему middleware в цепочке
+  next(err);
 }
 
 module.exports = errorHandler;

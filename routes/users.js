@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const { celebrate, Joi } = require('celebrate');
 const { checkAuth } = require('../middlewares/auth');
 
 const {
@@ -11,9 +12,26 @@ const {
   updateAvatar,
 } = require('../controllers/users');
 
+const signUpSchema = celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().uri(),
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+  }),
+});
+
+const signInSchema = celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+  }),
+});
+
 // открытые маршруты
-router.post('/signup', createUser);
-router.post('/signin', login);
+router.post('/signup', signUpSchema, createUser);
+router.post('/signin', signInSchema, login);
 
 // защищенные маршруты
 router.use(checkAuth);

@@ -9,7 +9,6 @@ const {
   getCurrentUser,
   updateUser,
   updateAvatar,
-  deleteCard,
 } = require('../controllers/users');
 
 // открытые маршруты

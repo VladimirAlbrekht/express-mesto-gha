@@ -45,16 +45,15 @@ const deleteCard = (req, res) => {
         return res.status(errors.FORBIDDEN).send({ message: 'Вы не можете удалить карточку другого пользователя' });
       }
       return Card.findByIdAndRemove(cardId)
-        .then((deletedCard) => {
-          return res.status(errors.OK).send({
-            message: 'Карточка успешно удалена',
-            deletedCard,
-          });
-        });
+        .then((deletedCard) => res.status(errors.OK).send({
+          message: 'Карточка успешно удалена',
+          deletedCard,
+        }));
     })
     .catch((err) => {
       res.status(errors.INTERNAL_SERVER_ERROR).send({ message: `Ошибка при удалении карточки: ${err}` });
     });
+  return null;
 };
 
 const likeCard = (req, res) => {
@@ -113,5 +112,4 @@ module.exports = {
   deleteCard,
   likeCard,
   dislikeCard,
-  deleteCard,
 };

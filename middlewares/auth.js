@@ -8,7 +8,7 @@ const checkAuth = async (req, res, next) => {
   const checkResult = checkToken(token);
 
   if (!checkResult) {
-    return res.status(403).json({ error: 'Access denied' });
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
   try {

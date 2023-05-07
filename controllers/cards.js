@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 const Card = require('../models/card');
-const errors = require('../errors/errors');
+const {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+  InternalServerError,
+} = require('../errors/errors');
 
 const getCards = (req, res) => {
   Card.find({})
@@ -10,7 +15,7 @@ const getCards = (req, res) => {
       res.send(cards);
     })
     .catch((err) => {
-      res.status(errors.INTERNAL_SERVER_ERROR).send({ message: err.message });
+      res.status(InternalServerError.statusCode).send({ message: err.message });
     });
 };
 
@@ -20,13 +25,13 @@ const createCard = (req, res) => {
 
   Card.create({ name, link, owner })
     .then((card) => {
-      res.status(errors.OK).send(card);
+      res.status(InternalServerError.statusCode).send(card);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(errors.BAD_REQUEST).send({ message: err.message });
+        res.status(BadRequestError.statusCode).send({ message: err.message });
       } else {
-        res.status(errors.INTERNAL_SERVER_ERROR).send({ message: err.message });
+        res.status(InternalServerError.statusCode).send({ message: err.message });
       }
     });
 };
@@ -34,24 +39,24 @@ const createCard = (req, res) => {
 const deleteCard = (req, res) => {
   const { cardId } = req.params;
   if (!mongoose.Types.ObjectId.isValid(cardId)) {
-    return res.status(errors.BAD_REQUEST).send({ message: 'Некорректный формат id карточки' });
+    return res.status(BadRequestError.statusCode).send({ message: 'Некорректный формат id карточки' });
   }
   Card.findById(cardId)
     .then((card) => {
       if (!card) {
-        return res.status(errors.NOT_FOUND).send({ message: 'Карточка не найдена' });
+        return res.status(NotFoundError.statusCode).send({ message: 'Карточка не найдена' });
       }
       if (card.owner.toString() !== req.user._id) {
-        return res.status(errors.FORBIDDEN).send({ message: 'Вы не можете удалить карточку другого пользователя' });
+        return res.status(ForbiddenError.statusCode).send({ message: 'Вы не можете удалить карточку другого пользователя' });
       }
       return Card.findByIdAndRemove(cardId)
-        .then((deletedCard) => res.status(errors.OK).send({
+        .then((deletedCard) => res.status(InternalServerError.statusCode).send({
           message: 'Карточка успешно удалена',
           deletedCard,
         }));
     })
     .catch((err) => {
-      res.status(errors.INTERNAL_SERVER_ERROR).send({ message: `Ошибка при удалении карточки: ${err}` });
+      res.status(InternalServerError.statusCode).send({ message: `Ошибка при удалении карточки: ${err}` });
     });
   return null;
 };
@@ -59,7 +64,7 @@ const deleteCard = (req, res) => {
 const likeCard = (req, res) => {
   const { cardId } = req.params;
   if (!mongoose.Types.ObjectId.isValid(cardId)) {
-    return res.status(errors.BAD_REQUEST).send({ message: 'Некорректный формат id карточки' });
+    return res.status(BadRequestError.statusCode).send({ message: 'Некорректный формат id карточки' });
   }
 
   Card.findByIdAndUpdate(
@@ -70,13 +75,13 @@ const likeCard = (req, res) => {
     .populate('likes')
     .then((card) => {
       if (!card) {
-        return res.status(errors.NOT_FOUND).send({ message: 'Карточка не найдена' });
+        return res.status(NotFoundError.statusCode).send({ message: 'Карточка не найдена' });
       }
 
-      return res.status(errors.OK).send(card);
+      return res.status(InternalServerError.statusCode).send(card);
     })
     .catch((err) => {
-      res.status(errors.INTERNAL_SERVER_ERROR).send({ message: err.message });
+      res.status(InternalServerError.statusCode).send({ message: err.message });
     });
   return null;
 };
@@ -84,7 +89,7 @@ const likeCard = (req, res) => {
 const dislikeCard = (req, res) => {
   const { cardId } = req.params;
   if (!mongoose.Types.ObjectId.isValid(cardId)) {
-    return res.status(errors.BAD_REQUEST).send({ message: 'Некорректный формат id карточки' });
+    return res.status(BadRequestError.statusCode).send({ message: 'Некорректный формат id карточки' });
   }
 
   Card.findByIdAndUpdate(
@@ -95,13 +100,13 @@ const dislikeCard = (req, res) => {
     .populate('likes')
     .then((card) => {
       if (!card) {
-        return res.status(errors.NOT_FOUND).send({ message: 'Карточка не найдена' });
+        return res.status(NotFoundError.statusCode).send({ message: 'Карточка не найдена' });
       }
 
-      return res.status(errors.OK).send(card);
+      return res.status(InternalServerError.statusCode).send(card);
     })
     .catch((err) => {
-      res.status(errors.INTERNAL_SERVER_ERROR).send({ message: err.message });
+      res.status(InternalServerError.statusCode).send({ message: err.message });
     });
   return null;
 };

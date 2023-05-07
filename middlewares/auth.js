@@ -1,27 +1,30 @@
 const { checkToken } = require('../utils/token');
 const User = require('../models/user');
+const AuthError = require('../errors/authError');
+const ServerError = require('../errors/serverError');
+const NoFoundError = require('../errors/noFoundError');
 
 const checkAuth = async (req, res, next) => {
   const token = req.cookies.jwt;
   if (!token) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return next(new AuthError('Токен остутствует или некорректен'));
   }
 
   const checkResult = checkToken(token);
 
   if (!checkResult) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    next(new AuthError('Токен не верифицирован, авторизация не пройдена'));
   }
 
   try {
     const user = await User.findById(checkResult._id);
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return new NoFoundError('Пользователь не найден');
     }
     req.user = user;
     return next();
   } catch (error) {
-    return res.status(500).json({ error: 'Server error' });
+    return new ServerError('Ошибка сервера');
   }
 };
 

@@ -1,17 +1,14 @@
-const http2 = require('http2');
+const { ERROR_CODE_SERVER } = require('../errors/errorsStatus');
 
-function errorHandler(err, req, res, next) {
-  // Определяем статусный код ошибки
-  const statusCode = err.statusCode || http2.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR;
+const handleErrors = (err, req, res, next) => {
+  const { statusCode = ERROR_CODE_SERVER, message } = err;
+  res.status(statusCode)
+    .send({
+      message: statusCode === ERROR_CODE_SERVER
+        ? 'На сервере произошла ошибка'
+        : message,
+    });
+  next();
+};
 
-  // Определяем сообщение об ошибке
-  const message = err.message || http2.constants.HTTP_STATUS_CODES[statusCode];
-
-  // Отправляем клиенту ответ с ошибкой
-  res.status(statusCode).json({ message });
-
-  // Передаем управление следующему middleware в цепочке
-  next(err);
-}
-
-module.exports = errorHandler;
+module.exports = handleErrors;

@@ -31,7 +31,7 @@ const createUser = async (req, res) => {
       email,
       password: hashedPassword,
     });
-пше
+
     return res.send(newUser.toJSON());
   } catch (error) {
     console.error(error);

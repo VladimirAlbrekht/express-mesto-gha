@@ -1,9 +1,15 @@
-const http2 = require('http2');
+const BadRequestError = require('./BadRequestError');
+const UnauthorizedError = require('./UnauthorizedError');
+const ForbiddenError = require('./ForbiddenError');
+const NotFoundError = require('./NotFoundError');
+const ConflictError = require('./ConflictError');
+const InternalServerError = require('./InternalServerError');
 
 module.exports = {
-  OK: http2.constants.HTTP_STATUS_OK,
-  NOT_FOUND: http2.constants.HTTP_STATUS_NOT_FOUND,
-  BAD_REQUEST: http2.constants.HTTP_STATUS_BAD_REQUEST,
-  INTERNAL_SERVER_ERROR: http2.constants.HTTP_STATUS_INTERNAL_SERVER_ERROR,
-  UNAUTHORIZED: http2.constants.HTTP_STATUS_UNAUTHORIZED,
+  BadRequestError,
+  UnauthorizedError,
+  ForbiddenError,
+  NotFoundError,
+  ConflictError,
+  InternalServerError,
 };

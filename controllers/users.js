@@ -1,17 +1,13 @@
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
-const {
-  BadRequestError,
-  UnauthorizedError,
-  NotFoundError,
-  ConflictError,
-  InternalServerError,
-} = require('../errors/errors');
 const User = require('../models/user');
 const { generateToken } = require('../utils/token');
-
-const INTERNAL_SERVER_ERROR_MESSAGE = 'Внутренняя ошибка сервера';
-const INVALID_USER_ID_ERROR = 'Некорректный идентификатор пользователя';
+const NotFoundError = require('../errors/notFoundError');
+const ValidationError = require('../errors/validationError');
+const UserExistError = require('../errors/userExistError');
+const NoRightsError = require('../errors/noRightsError');
+const ServerError = require('../errors/serverError');
+const AuthError = require('../errors/authError');
 
 const createUser = async (req, res, next) => {
   const {
@@ -26,11 +22,11 @@ const createUser = async (req, res, next) => {
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-      throw new ConflictError('Пользователь с таким email уже существует');
+      throw new UserExistError('Пользователь с таким email уже существует');
     }
 
     if (name.length < 2) {
-      throw new BadRequestError('Имя пользователя должно содержать не менее 2 символов');
+      throw new ValidationError('Имя пользователя должно содержать не менее 2 символов');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -44,10 +40,10 @@ const createUser = async (req, res, next) => {
 
     return res.status(201).send(newUser.toJSON()); // устанавливаем код статуса явно
   } catch (error) {
-    if (error instanceof BadRequestError || error instanceof ConflictError) {
+    if (error instanceof ValidationError || error instanceof NoRightsError) {
       return res.status(error.statusCode).send({ message: error.message });
     }
-    return next(new InternalServerError(INTERNAL_SERVER_ERROR_MESSAGE));
+    return next(new ServerError('Внутренняя ошибка сервера'));
   }
 };
 
@@ -58,22 +54,22 @@ const login = async (req, res, next) => {
     const user = await User.findOne({ email }).select('+password');
 
     if (!user) {
-      throw new UnauthorizedError('Неправильные почта или пароль');
+      throw new AuthError('Неправильные почта или пароль');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      throw new UnauthorizedError('Неправильные почта или пароль');
+      throw new AuthError('Неправильные почта или пароль');
     }
 
     const token = generateToken({ _id: user._id });
     res.cookie('jwt', token);
     return res.status(200).send();
   } catch (error) {
-    if (error instanceof UnauthorizedError) {
+    if (error instanceof AuthError) {
       return res.status(error.statusCode).json({ message: error.message });
-    } return next(new InternalServerError(INTERNAL_SERVER_ERROR_MESSAGE));
+    } return next(new ServerError('Внутренняя ошибка сервера'));
   }
 };
 
@@ -82,7 +78,7 @@ const getUsers = async (req, res, next) => {
     const users = await User.find({});
     return res.send(users);
   } catch (error) {
-    return next(new InternalServerError(INTERNAL_SERVER_ERROR_MESSAGE));
+    return next(new ServerError('Внутренняя ошибка сервера'));
   }
 };
 
@@ -91,7 +87,7 @@ const getUserById = async (req, res, next) => {
 
   try {
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      throw new BadRequestError(INVALID_USER_ID_ERROR);
+      throw new ValidationError('Некорректный идентификатор пользователя');
     }
 
     const user = await User.findById(userId);
@@ -102,9 +98,9 @@ const getUserById = async (req, res, next) => {
 
     return res.send(user);
   } catch (error) {
-    if (error instanceof BadRequestError || error instanceof NotFoundError) {
+    if (error instanceof ValidationError || error instanceof NotFoundError) {
       return res.status(error.statusCode).send({ message: error.message });
-    } return next(new InternalServerError(INTERNAL_SERVER_ERROR_MESSAGE));
+    } return next(new ServerError('Внутренняя ошибка сервера'));
   }
 };
 
@@ -120,7 +116,7 @@ const getCurrentUser = async (req, res, next) => {
   } catch (error) {
     if (error instanceof NotFoundError) {
       return res.status(error.statusCode).json({ message: error.message });
-    } return next(new InternalServerError(INTERNAL_SERVER_ERROR_MESSAGE));
+    } return next(new ServerError('Внутренняя ошибка сервера'));
   }
 };
 
@@ -137,18 +133,18 @@ const updateUser = (req, res, next) => {
         throw new NotFoundError('Пользователь не найден');
       }
       if (user._id.toString() !== req.user._id.toString()) {
-        throw new UnauthorizedError('Вы не можете редактировать данные других пользователей');
+        throw new AuthError('Вы не можете редактировать данные других пользователей');
       }
       return res.send(user);
     })
     .catch((error) => {
-      if (error instanceof NotFoundError || error instanceof UnauthorizedError) {
+      if (error instanceof NotFoundError || error instanceof AuthError) {
         return res.status(error.statusCode).json({ message: error.message });
       }
       if (error.name === 'ValidationError') {
         return res.status(400).json({ message: 'Ошибка валидации' });
       }
-      return next(new InternalServerError(INTERNAL_SERVER_ERROR_MESSAGE));
+      return next(new ServerError('Внутренняя ошибка сервера'));
     });
 };
 
@@ -174,7 +170,7 @@ const updateAvatar = async (req, res, next) => {
     if (error.name === 'ValidationError') {
       return res.status(400).json({ message: 'Ошибка валидации' });
     }
-    return next(new InternalServerError(INTERNAL_SERVER_ERROR_MESSAGE));
+    return next(new ServerError('Внутренняя ошибка сервера'));
   }
 };
 

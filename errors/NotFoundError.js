@@ -1,10 +1,9 @@
-const http2 = require('http2');
+const { ERROR_CODE_NOT_FOUND } = require('./errorsStatus');
 
 class NotFoundError extends Error {
   constructor(message) {
     super(message);
-    this.statusCode = http2.constants.HTTP_STATUS_NOT_FOUND;
-    this.name = 'NotFoundError';
+    this.statusCode = ERROR_CODE_NOT_FOUND;
   }
 }
 

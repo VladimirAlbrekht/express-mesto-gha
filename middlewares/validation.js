@@ -54,6 +54,7 @@ const validateUserProfile = celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
+    avatar: Joi.string().uri().allow('').optional(),
   }),
 });
 
@@ -66,9 +67,9 @@ const validateUserAvatar = celebrate({
 const validateSignup = celebrate({
   body: Joi.object().keys({
     email: checkedEmail,
-    password: Joi.string().required().min(4),
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
+    password: Joi.string().required(),
+    name: Joi.string().min(2).max(30).optional(),
+    about: Joi.string().min(2).max(30).optional(),
     avatar: checkedLink,
   }),
 });
@@ -76,7 +77,7 @@ const validateSignup = celebrate({
 const validateSignin = celebrate({
   body: Joi.object().keys({
     email: checkedEmail,
-    password: Joi.string().required().min(4),
+    password: Joi.string().required(),
   }),
 });
 

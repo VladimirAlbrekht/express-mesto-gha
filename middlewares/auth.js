@@ -21,7 +21,6 @@ const checkAuth = async (req, res, next) => {
     req.user = user;
     return next();
   } catch (error) {
-    console.error(error);
     return res.status(500).json({ error: 'Server error' });
   }
 };

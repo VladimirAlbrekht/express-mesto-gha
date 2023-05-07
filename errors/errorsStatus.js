@@ -12,5 +12,4 @@ module.exports = {
   ERROR_CODE_AUTH,
   ERROR_CODE_USER_EXIST,
   ERROR_CODE_NO_RIGHTS,
-
 };

@@ -53,7 +53,3 @@ app.use(errors());
 
 // Middleware для обработки ошибок
 app.use(errorHandler);
-
-app.listen(3000, () => {
-  console.log('Server started on port 3000');
-});

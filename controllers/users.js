@@ -31,9 +31,13 @@ const createUser = async (req, res) => {
       email,
       password: hashedPassword,
     });
-
+пше
     return res.send(newUser.toJSON());
-  } catch (err) {
+  } catch (error) {
+    console.error(error);
+    if (error.name === 'UnauthorizedError') {
+      return res.status(UNAUTHORIZED).json({ message: 'Необходима авторизация' });
+    }
     return res.status(BAD_REQUEST).send({ message: 'Ошибка сохранения нового пользователя' });
   }
 };
@@ -82,12 +86,13 @@ const getUserById = async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(401).send({ message: 'Запрашиваемый пользователь не найден' });
+      return res.status(NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден' });
     }
 
     return res.send(user);
-  } catch (err) {
-    return res.status(BAD_REQUEST).json({ message: INTERNAL_SERVER_ERROR_MESSAGE });
+  } catch (error) {
+    console.error(error);
+    return res.status(UNAUTHORIZED).json({ message: 'Необходима авторизация' });
   }
 };
 
@@ -102,6 +107,9 @@ const getCurrentUser = async (req, res) => {
     return res.json(user);
   } catch (error) {
     console.error(error);
+    if (error.name === 'UnauthorizedError') {
+      return res.status(UNAUTHORIZED).json({ message: 'Необходима авторизация' });
+    }
     return res.status(BAD_REQUEST).json({ message: 'Ошибка получения данных текущего пользователя' });
   }
 };

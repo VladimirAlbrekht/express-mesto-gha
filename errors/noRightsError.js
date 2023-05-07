@@ -1,9 +1,9 @@
-const { ERROR_CODE_NO_RIGHTS } = require('./errorsStatus');
+const { FORBIDDEN } = require('./errorsStatus');
 
 class NoRightsError extends Error {
   constructor(message) {
     super(message);
-    this.statusCode = ERROR_CODE_NO_RIGHTS;
+    this.statusCode = FORBIDDEN;
   }
 }
 

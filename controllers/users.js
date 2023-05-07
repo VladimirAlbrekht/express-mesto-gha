@@ -40,8 +40,8 @@ const createUser = async (req, res, next) => {
 
     return res.status(201).send(newUser.toJSON());
   } catch (error) {
-    if (error.code === 11000) {
-      return next(new UserExistError('Пользователь с таким email уже существует'));
+    if (error instanceof UserExistError) {
+      return next(error);
     }
 
     if (error.name === 'ValidationError') {

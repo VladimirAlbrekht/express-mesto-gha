@@ -4,7 +4,7 @@ const User = require('../models/user');
 const { generateToken } = require('../utils/token');
 
 const ValidationError = require('../errors/validationError');
-const NotFoundError = require('../errors/notFoundError');
+const NoFoundError = require('../errors/noFoundError');
 const UserExistError = require('../errors/userExistError');
 const NoRightsError = require('../errors/noRightsError');
 const ServerError = require('../errors/serverError');
@@ -94,12 +94,12 @@ const getUserById = async (req, res, next) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      throw new NotFoundError('Запрашиваемый пользователь не найден');
+      throw new NoFoundError('Запрашиваемый пользователь не найден');
     }
 
     return res.send(user);
   } catch (error) {
-    if (error instanceof ValidationError || error instanceof NotFoundError) {
+    if (error instanceof ValidationError || error instanceof NoFoundError) {
       return res.status(error.statusCode).send({ message: error.message });
     } return next(new ServerError('Внутренняя ошибка сервера'));
   }
@@ -110,12 +110,12 @@ const getCurrentUser = async (req, res, next) => {
     const user = await User.findById(req.user._id);
 
     if (!user) {
-      throw new NotFoundError('Пользователь не найден');
+      throw new NoFoundError('Пользователь не найден');
     }
 
     return res.json(user);
   } catch (error) {
-    if (error instanceof NotFoundError) {
+    if (error instanceof NoFoundError) {
       return res.status(error.statusCode).json({ message: error.message });
     } return next(new ServerError('Внутренняя ошибка сервера'));
   }
@@ -131,7 +131,7 @@ const updateUser = (req, res, next) => {
   )
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Пользователь не найден');
+        throw new NoFoundError('Пользователь не найден');
       }
       if (user._id.toString() !== req.user._id.toString()) {
         throw new AuthError('Вы не можете редактировать данные других пользователей');
@@ -139,7 +139,7 @@ const updateUser = (req, res, next) => {
       return res.send(user);
     })
     .catch((error) => {
-      if (error instanceof NotFoundError || error instanceof AuthError) {
+      if (error instanceof NoFoundError || error instanceof AuthError) {
         return res.status(error.statusCode).json({ message: error.message });
       }
       if (error.name === 'ValidationError') {
@@ -160,12 +160,12 @@ const updateAvatar = async (req, res, next) => {
     );
 
     if (!user) {
-      throw new NotFoundError('Пользователь не найден');
+      throw new NoFoundError('Пользователь не найден');
     }
 
     return res.send(user);
   } catch (error) {
-    if (error instanceof NotFoundError) {
+    if (error instanceof NoFoundError) {
       return res.status(error.statusCode).json({ message: error.message });
     }
     if (error.name === 'ValidationError') {

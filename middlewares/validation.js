@@ -27,7 +27,7 @@ const checkedLink = Joi.string()
 
 const validateAuth = celebrate({
   headers: Joi.object().keys({
-    authorization: Joi.string().required(),
+    authorization: Joi.string().required().error(new Error('Необходимо авторизоваться')),
   }).unknown(),
 });
 

@@ -6,7 +6,6 @@ const { generateToken } = require('../utils/token');
 const ValidationError = require('../errors/validationError');
 const NoFoundError = require('../errors/noFoundError');
 const UserExistError = require('../errors/userExistError');
-const NoRightsError = require('../errors/noRightsError');
 const ServerError = require('../errors/serverError');
 const AuthError = require('../errors/authError');
 
@@ -39,11 +38,16 @@ const createUser = async (req, res, next) => {
       password: hashedPassword,
     });
 
-    return res.status(201).send(newUser.toJSON()); // устанавливаем код статуса явно
+    return res.status(201).send(newUser.toJSON());
   } catch (error) {
-    if (error instanceof ValidationError || error instanceof NoRightsError) {
-      return res.status(error.statusCode).send({ message: error.message });
+    if (error.code === 11000) {
+      return next(new UserExistError('Пользователь с таким email уже существует'));
     }
+
+    if (error.name === 'ValidationError') {
+      return next(new ValidationError('Некорректные данные при создании пользователя.'));
+    }
+
     return next(new ServerError('Внутренняя ошибка сервера'));
   }
 };

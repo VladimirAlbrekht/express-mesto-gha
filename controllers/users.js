@@ -2,8 +2,9 @@ const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const User = require('../models/user');
 const { generateToken } = require('../utils/token');
-const NotFoundError = require('../errors/notFoundError');
+
 const ValidationError = require('../errors/validationError');
+const NotFoundError = require('../errors/notFoundError');
 const UserExistError = require('../errors/userExistError');
 const NoRightsError = require('../errors/noRightsError');
 const ServerError = require('../errors/serverError');

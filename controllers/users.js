@@ -29,6 +29,10 @@ const createUser = async (req, res, next) => {
       throw new ConflictError('Пользователь с таким email уже существует');
     }
 
+    if (name.length < 2) {
+      throw new BadRequestError('Имя пользователя должно содержать не менее 2 символов');
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await User.create({
       name,
@@ -38,7 +42,7 @@ const createUser = async (req, res, next) => {
       password: hashedPassword,
     });
 
-    return res.send(newUser.toJSON());
+    return res.status(201).send(newUser.toJSON()); // устанавливаем код статуса явно
   } catch (error) {
     if (error instanceof BadRequestError || error instanceof ConflictError) {
       return res.status(error.statusCode).send({ message: error.message });

@@ -1,9 +1,10 @@
 const express = require('express');
+const { celebrate, Joi } = require('celebrate');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
+const { errors } = require('celebrate');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
-const errors = require('./errors/errors'); // добавляем модуль ошибок
 const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
@@ -25,18 +26,30 @@ mongoose.connect('mongodb://localhost:27017/mestobd', { useNewUrlParser: true, u
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 
-// Middleware для обработки ошибок 404
-app.use((req, res, next) => {
-  res.status(errors.NOT_FOUND).json({ message: 'Запрашиваемый ресурс не найден' });
-  next();
+// Middleware для проверки тела запроса с помощью celebrate
+app.use(
+  celebrate({
+    body: Joi.object().keys({
+      name: Joi.string().required(),
+      email: Joi.string().email().required(),
+      password: Joi.string().required(),
+    }),
+  }),
+);
+
+// Middleware для обработки ошибок валидации
+app.use((err, req, res, next) => {
+  if (err.joi) {
+    // Если ошибка валидации, отправляем ответ с кодом статуса 400 и сообщением об ошибке
+    res.status(400).json({ message: err.joi.details[0].message });
+  } else {
+    // Если другая ошибка, передаем управление следующему middleware
+    next(err);
+  }
 });
 
-// Middleware для обработки ошибок 500
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(errors.INTERNAL_SERVER_ERROR).json({ message: 'Внутренняя ошибка сервера' });
-  next();
-});
+// Middleware для обработки ошибок celebrate
+app.use(errors());
 
 // Middleware для обработки ошибок
 app.use(errorHandler);

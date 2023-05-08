@@ -1,4 +1,5 @@
 const JWT = require('jsonwebtoken');
+const AuthError = require('../errors/authError');
 
 const SECRET_KEY = 'SECRET';
 
@@ -8,7 +9,7 @@ function generateToken(payload) {
 
 function checkToken(token) {
   if (!token) {
-    return { error: 'Token is missing' };
+    return new AuthError('Неправильный токен');
   }
   try {
     return JWT.verify(token, SECRET_KEY);

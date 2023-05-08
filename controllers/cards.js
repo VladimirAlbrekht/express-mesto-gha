@@ -24,7 +24,7 @@ const createCard = (req, res) => {
 
   Card.create({ name, link, owner })
     .then((card) => {
-      res.status(ServerError.statusCode).send(card);
+      res.status(201).send(card);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -49,7 +49,7 @@ const deleteCard = (req, res) => {
         return res.status(NoRightsError.statusCode).send({ message: 'Вы не можете удалить карточку другого пользователя' });
       }
       return Card.findByIdAndRemove(cardId)
-        .then((deletedCard) => res.status(ServerError.statusCode).send({
+        .then((deletedCard) => res.status(200).send({
           message: 'Карточка успешно удалена',
           deletedCard,
         }));
@@ -77,7 +77,7 @@ const likeCard = (req, res) => {
         return res.status(NoFoundError.statusCode).send({ message: 'Карточка не найдена' });
       }
 
-      return res.status(ServerError.statusCode).send(card);
+      return res.status(200).send(card);
     })
     .catch((err) => {
       res.status(ServerError.statusCode).send({ message: err.message });
@@ -102,7 +102,7 @@ const dislikeCard = (req, res) => {
         return res.status(NoFoundError.statusCode).send({ message: 'Карточка не найдена' });
       }
 
-      return res.status(ServerError.statusCode).send(card);
+      return res.status(200).send(card);
     })
     .catch((err) => {
       res.status(ServerError.statusCode).send({ message: err.message });

@@ -22,17 +22,22 @@ const createCard = (req, res) => {
   const { name, link } = req.body;
   const owner = req.user._id;
 
+  if (name.length < 2) {
+    return res.status(400).send({ message: 'Длина поля name должна быть не менее 2 символов' });
+  }
+
   Card.create({ name, link, owner })
     .then((card) => {
       res.status(201).send(card);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ValidationError.statusCode).send({ message: err.message });
+        res.status(400).send({ message: err.message });
       } else {
-        res.status(ServerError.statusCode).send({ message: err.message });
+        res.status(500).send({ message: err.message });
       }
     });
+  return null;
 };
 
 const deleteCard = (req, res) => {

@@ -8,8 +8,7 @@ const ServerError = require('../errors/serverError');
 
 const getCards = (req, res) => {
   Card.find({})
-    .populate('owner')
-    .populate('likes')
+    .populate(['owner', 'likes'])
     .then((cards) => {
       res.send(cards);
     })
@@ -27,9 +26,7 @@ const createCard = (req, res) => {
   }
 
   Card.create({ name, link, owner })
-    .then((card) => {
-      res.status(201).send(card);
-    })
+    .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: err.message });

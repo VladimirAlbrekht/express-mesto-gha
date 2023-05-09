@@ -11,9 +11,9 @@ const AuthError = require('../errors/authError');
 
 const createUser = async (req, res, next) => {
   const {
-    name = 'Жак-Ив Кусто',
-    about = 'Исследователь',
-    avatar = 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+    name,
+    about,
+    avatar,
     email,
     password,
   } = req.body;
@@ -23,10 +23,6 @@ const createUser = async (req, res, next) => {
 
     if (existingUser) {
       throw new UserExistError('Пользователь с таким email уже существует');
-    }
-
-    if (name.length < 2) {
-      throw new ValidationError('Имя пользователя должно содержать не менее 2 символов');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -72,9 +68,7 @@ const login = async (req, res, next) => {
     res.cookie('jwt', token);
     return res.status(200).send();
   } catch (error) {
-    if (error instanceof AuthError) {
-      return res.status(error.statusCode).json({ message: error.message });
-    } return next(new ServerError('Внутренняя ошибка сервера'));
+    return next(error);
   }
 };
 
@@ -104,7 +98,7 @@ const getUserById = async (req, res, next) => {
     return res.send(user);
   } catch (error) {
     if (error instanceof ValidationError || error instanceof NoFoundError) {
-      return res.status(error.statusCode).send({ message: error.message });
+      return next(error);
     } return next(new ServerError('Внутренняя ошибка сервера'));
   }
 };
@@ -169,13 +163,7 @@ const updateAvatar = async (req, res, next) => {
 
     return res.send(user);
   } catch (error) {
-    if (error instanceof NoFoundError) {
-      return res.status(error.statusCode).json({ message: error.message });
-    }
-    if (error.name === 'ValidationError') {
-      return res.status(400).json({ message: 'Ошибка валидации' });
-    }
-    return next(new ServerError('Внутренняя ошибка сервера'));
+    return next(error);
   }
 };
 

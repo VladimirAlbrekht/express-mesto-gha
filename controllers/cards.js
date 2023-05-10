@@ -4,51 +4,43 @@ const Card = require('../models/card');
 const ValidationError = require('../errors/validationError');
 const NoFoundError = require('../errors/noFoundError');
 const NoRightsError = require('../errors/noRightsError');
-const ServerError = require('../errors/serverError');
 
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
     .populate(['owner', 'likes'])
-    .then((cards) => {
-      res.send(cards);
-    })
-    .catch((err) => {
-      res.status(ServerError.statusCode).send({ message: err.message });
-    });
+    .then((cards) => res.send(cards))
+    .catch((error) => next(error));
 };
 
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
 
-  if (name.length < 2) {
-    return res.status(400).send({ message: 'Длина поля name должна быть не менее 2 символов' });
-  }
-
   Card.create({ name, link, owner })
     .then((card) => res.send(card))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
+        throw new ValidationError(error.message);
       } else {
-        res.status(500).send({ message: err.message });
+        throw error;
       }
-    });
+    })
+    .catch((error) => next(error));
   return null;
 };
 
-const deleteCard = (req, res) => {
+const deleteCard = (req, res, next) => {
   const { cardId } = req.params;
   if (!mongoose.Types.ObjectId.isValid(cardId)) {
-    return res.status(ValidationError.statusCode).send({ message: 'Некорректный формат id карточки' });
+    throw new ValidationError('Некорректный формат id карточки');
   }
   Card.findById(cardId)
     .then((card) => {
       if (!card) {
-        return res.status(NoFoundError.statusCode).send({ message: 'Карточка не найдена' });
+        throw new NoFoundError('Карточка не найдена');
       }
       if (card.owner.toString() !== req.user._id) {
-        return res.status(NoRightsError.statusCode).send({ message: 'Вы не можете удалить карточку другого пользователя' });
+        throw new NoRightsError('Вы не можете удалить карточку другого пользователя');
       }
       return Card.findByIdAndRemove(cardId)
         .then((deletedCard) => res.status(200).send({
@@ -56,16 +48,14 @@ const deleteCard = (req, res) => {
           deletedCard,
         }));
     })
-    .catch((err) => {
-      res.status(ServerError.statusCode).send({ message: `Ошибка при удалении карточки: ${err}` });
-    });
+    .catch((error) => next(error));
   return null;
 };
 
-const likeCard = (req, res) => {
+const likeCard = (req, res, next) => {
   const { cardId } = req.params;
   if (!mongoose.Types.ObjectId.isValid(cardId)) {
-    return res.status(ValidationError.statusCode).send({ message: 'Некорректный формат id карточки' });
+    throw new ValidationError('Некорректный формат id карточки');
   }
 
   Card.findByIdAndUpdate(
@@ -76,21 +66,19 @@ const likeCard = (req, res) => {
     .populate('likes')
     .then((card) => {
       if (!card) {
-        return res.status(NoFoundError.statusCode).send({ message: 'Карточка не найдена' });
+        throw new NoFoundError('Карточка не найдена');
       }
 
       return res.status(200).send(card);
     })
-    .catch((err) => {
-      res.status(ServerError.statusCode).send({ message: err.message });
-    });
+    .catch((error) => next(error));
   return null;
 };
 
-const dislikeCard = (req, res) => {
+const dislikeCard = (req, res, next) => {
   const { cardId } = req.params;
   if (!mongoose.Types.ObjectId.isValid(cardId)) {
-    return res.status(ValidationError.statusCode).send({ message: 'Некорректный формат id карточки' });
+    throw new ValidationError('Некорректный формат id карточки');
   }
 
   Card.findByIdAndUpdate(
@@ -101,14 +89,12 @@ const dislikeCard = (req, res) => {
     .populate('likes')
     .then((card) => {
       if (!card) {
-        return res.status(NoFoundError.statusCode).send({ message: 'Карточка не найдена' });
+        throw new NoFoundError('Карточка не найдена');
       }
 
       return res.status(200).send(card);
     })
-    .catch((err) => {
-      res.status(ServerError.statusCode).send({ message: err.message });
-    });
+    .catch((error) => next(error));
   return null;
 };
 

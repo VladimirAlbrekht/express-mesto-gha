@@ -6,7 +6,6 @@ const { generateToken } = require('../utils/token');
 const ValidationError = require('../errors/validationError');
 const NoFoundError = require('../errors/noFoundError');
 const UserExistError = require('../errors/userExistError');
-const ServerError = require('../errors/serverError');
 const AuthError = require('../errors/authError');
 
 const createUser = async (req, res, next) => {
@@ -44,7 +43,7 @@ const createUser = async (req, res, next) => {
       return next(new ValidationError('Некорректные данные при создании пользователя.'));
     }
 
-    return next(new ServerError('Внутренняя ошибка сервера'));
+    return next(error);
   }
 };
 
@@ -77,7 +76,7 @@ const getUsers = async (req, res, next) => {
     const users = await User.find({});
     return res.send(users);
   } catch (error) {
-    return next(new ServerError('Внутренняя ошибка сервера'));
+    return next(error);
   }
 };
 
@@ -99,7 +98,7 @@ const getUserById = async (req, res, next) => {
   } catch (error) {
     if (error instanceof ValidationError || error instanceof NoFoundError) {
       return next(error);
-    } return next(new ServerError('Внутренняя ошибка сервера'));
+    } return next(error);
   }
 };
 
@@ -115,7 +114,7 @@ const getCurrentUser = async (req, res, next) => {
   } catch (error) {
     if (error instanceof NoFoundError) {
       return res.status(error.statusCode).json({ message: error.message });
-    } return next(new ServerError('Внутренняя ошибка сервера'));
+    } return next(error);
   }
 };
 
@@ -143,7 +142,7 @@ const updateUser = (req, res, next) => {
       if (error.name === 'ValidationError') {
         return res.status(400).json({ message: 'Ошибка валидации' });
       }
-      return next(new ServerError('Внутренняя ошибка сервера'));
+      return next(error);
     });
 };
 

@@ -1,5 +1,4 @@
 const router = require('express').Router();
-const { celebrate, Joi } = require('celebrate');
 const {
   getCards,
   createCard,
@@ -8,21 +7,16 @@ const {
   dislikeCard,
 } = require('../controllers/cards');
 
-const createCardSchema = celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30).required(),
-    link: Joi.string().required().pattern(/^(https?:\/\/)(www\.)?[\w-]+(\.[\w-]+)+([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?#?$/),
-  }),
-});
+const { validateCard, validateCreateCard } = require('../middlewares/validation');
 
 // возвращает все карточки
 router.get('/', getCards);
 // создает карточку
-router.post('/', createCardSchema, createCard);
+router.post('/', validateCreateCard, createCard);
 // удаляет карточку по идентификатору
-router.delete('/:cardId', deleteCard);
+router.delete('/:cardId', validateCard, deleteCard);
 // ставит лайк карточке
-router.put('/:cardId/likes', likeCard);
+router.put('/:cardId/likes', validateCard, likeCard);
 // убирает лайк с карточки
-router.delete('/:cardId/likes', dislikeCard);
+router.delete('/:cardId/likes', validateCard, dislikeCard);
 module.exports = router;

@@ -1,7 +1,14 @@
 const router = require('express').Router();
-const { celebrate, Joi } = require('celebrate');
-const { checkAuth } = require('../middlewares/auth');
 
+const { checkAuth } = require('../middlewares/auth');
+const {
+  validateSignup,
+  validateSignin,
+  validateAuth,
+  validateUser,
+  validateUserProfile,
+  validateUserAvatar,
+} = require('../middlewares/validation');
 const {
   createUser,
   login,
@@ -11,34 +18,16 @@ const {
   updateUser,
   updateAvatar,
 } = require('../controllers/users');
-
-const signUpSchema = celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30).required(),
-    about: Joi.string().min(2).max(30).required(),
-    avatar: Joi.string().uri().required(),
-    email: Joi.string().email().required(),
-    password: Joi.string().required().min(1).presence('required'),
-  }),
-});
-
-const signInSchema = celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().email().required(),
-    password: Joi.string().required(),
-  }),
-});
-
 // открытые маршруты
-router.post('/signup', signUpSchema, createUser);
-router.post('/signin', signInSchema, login);
+router.post('/signup', validateSignup, createUser);
+router.post('/signin', validateSignin, login);
 
 // защищенные маршруты
-router.use(checkAuth);
+router.use(validateAuth, checkAuth);
 router.get('/', getUsers);
 router.get('/me', getCurrentUser);
-router.patch('/me', updateUser);
-router.patch('/me/avatar', updateAvatar);
-router.get('/:userId', getUserById);
+router.patch('/me', validateUserProfile, updateUser);
+router.patch('/me/avatar', validateUserAvatar, updateAvatar);
+router.get('/:userId', validateUser, getUserById);
 
 module.exports = router;

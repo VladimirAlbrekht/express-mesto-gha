@@ -1,7 +1,6 @@
 const { checkToken } = require('../utils/token');
-const User = require('../models/user');
+
 const AuthError = require('../errors/authError');
-const NoFoundError = require('../errors/noFoundError');
 
 const checkAuth = async (req, res, next) => {
   const token = req.cookies.jwt;
@@ -15,16 +14,8 @@ const checkAuth = async (req, res, next) => {
     return next(new AuthError('Токен не верифицирован, авторизация не пройдена'));
   }
 
-  try {
-    const user = await User.findById(checkResult._id);
-    if (!user) {
-      return next(new NoFoundError('Пользователь не найден'));
-    }
-    req.user = user;
-    return next();
-  } catch (error) {
-    return next(error);
-  }
+  req.user = { _id: checkResult._id };
+  return next();
 };
 
 module.exports = { checkAuth };

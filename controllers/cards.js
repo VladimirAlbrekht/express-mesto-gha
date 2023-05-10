@@ -8,7 +8,7 @@ const NoRightsError = require('../errors/noRightsError');
 const getCards = (req, res, next) => {
   Card.find({})
     .populate(['owner', 'likes'])
-    .then((cards) => res.send(cards))
+    .then((cards) => res.json(cards))
     .catch((error) => next(error));
 };
 
@@ -17,7 +17,7 @@ const createCard = (req, res, next) => {
   const owner = req.user._id;
 
   Card.create({ name, link, owner })
-    .then((card) => res.send(card))
+    .then((card) => res.json(card))
     .catch((error) => {
       if (error.name === 'ValidationError') {
         throw new ValidationError(error.message);
@@ -43,7 +43,7 @@ const deleteCard = (req, res, next) => {
         throw new NoRightsError('Вы не можете удалить карточку другого пользователя');
       }
       return Card.findByIdAndRemove(cardId)
-        .then((deletedCard) => res.status(200).send({
+        .then((deletedCard) => res.status(200).json({
           message: 'Карточка успешно удалена',
           deletedCard,
         }));
@@ -69,7 +69,7 @@ const likeCard = (req, res, next) => {
         throw new NoFoundError('Карточка не найдена');
       }
 
-      return res.status(200).send(card);
+      return res.status(200).json(card);
     })
     .catch((error) => next(error));
   return null;
@@ -92,7 +92,7 @@ const dislikeCard = (req, res, next) => {
         throw new NoFoundError('Карточка не найдена');
       }
 
-      return res.status(200).send(card);
+      return res.status(200).json(card);
     })
     .catch((error) => next(error));
   return null;

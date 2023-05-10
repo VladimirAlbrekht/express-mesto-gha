@@ -33,7 +33,7 @@ const createUser = async (req, res, next) => {
       password: hashedPassword,
     });
 
-    return res.status(201).send(newUser.toJSON());
+    return res.status(201).json(newUser.toJSON());
   } catch (error) {
     if (error instanceof UserExistError) {
       return next(error);
@@ -65,7 +65,7 @@ const login = async (req, res, next) => {
 
     const token = generateToken({ _id: user._id });
     res.cookie('jwt', token);
-    return res.status(200).send();
+    return res.status(200).json();
   } catch (error) {
     return next(error);
   }
@@ -74,7 +74,7 @@ const login = async (req, res, next) => {
 const getUsers = async (req, res, next) => {
   try {
     const users = await User.find({});
-    return res.send(users);
+    return res.json(users);
   } catch (error) {
     return next(error);
   }
@@ -94,7 +94,7 @@ const getUserById = async (req, res, next) => {
       throw new NoFoundError('Запрашиваемый пользователь не найден');
     }
 
-    return res.send(user);
+    return res.json(user);
   } catch (error) {
     if (error instanceof ValidationError || error instanceof NoFoundError) {
       return next(error);
@@ -133,7 +133,7 @@ const updateUser = (req, res, next) => {
       if (user._id.toString() !== req.user._id.toString()) {
         throw new AuthError('Вы не можете редактировать данные других пользователей');
       }
-      return res.send(user);
+      return res.json(user);
     })
     .catch((error) => {
       if (error instanceof NoFoundError || error instanceof AuthError) {
@@ -160,7 +160,7 @@ const updateAvatar = async (req, res, next) => {
       throw new NoFoundError('Пользователь не найден');
     }
 
-    return res.send(user);
+    return res.json(user);
   } catch (error) {
     return next(error);
   }

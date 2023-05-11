@@ -45,6 +45,7 @@ const deleteCard = (req, res, next) => {
         }));
     })
     .catch((error) => next(error));
+  return {};
 };
 
 const likeCard = (req, res, next) => {
@@ -67,6 +68,7 @@ const likeCard = (req, res, next) => {
       return res.status(200).json(card);
     })
     .catch((error) => next(error));
+  return {};
 };
 
 const dislikeCard = (req, res, next) => {
@@ -89,6 +91,7 @@ const dislikeCard = (req, res, next) => {
       return res.status(200).json(card);
     })
     .catch((error) => next(error));
+  return {};
 };
 
 module.exports = {

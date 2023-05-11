@@ -19,28 +19,24 @@ const createCard = (req, res, next) => {
   Card.create({ name, link, owner })
     .then((card) => res.json(card))
     .catch((error) => {
-      if (error.name === 'ValidationError') {
-        throw new ValidationError(error.message);
-      } else {
-        throw error;
-      }
-    })
-    .catch((error) => next(error));
-  return null;
+      if (error instanceof ValidationError) {
+        return next(new ValidationError(error.message));
+      } return next(error);
+    });
 };
 
 const deleteCard = (req, res, next) => {
   const { cardId } = req.params;
   if (!mongoose.Types.ObjectId.isValid(cardId)) {
-    throw new ValidationError('Некорректный формат id карточки');
+    return next(new ValidationError('Некорректный формат id карточки'));
   }
   Card.findById(cardId)
     .then((card) => {
       if (!card) {
-        throw new NoFoundError('Карточка не найдена');
+        return next(new NoFoundError('Карточка не найдена'));
       }
       if (card.owner.toString() !== req.user._id) {
-        throw new NoRightsError('Вы не можете удалить карточку другого пользователя');
+        return next(new NoRightsError('Вы не можете удалить карточку другого пользователя'));
       }
       return Card.findByIdAndRemove(cardId)
         .then((deletedCard) => res.status(200).json({
@@ -49,13 +45,12 @@ const deleteCard = (req, res, next) => {
         }));
     })
     .catch((error) => next(error));
-  return null;
 };
 
 const likeCard = (req, res, next) => {
   const { cardId } = req.params;
   if (!mongoose.Types.ObjectId.isValid(cardId)) {
-    throw new ValidationError('Некорректный формат id карточки');
+    return next(new ValidationError('Некорректный формат id карточки'));
   }
 
   Card.findByIdAndUpdate(
@@ -66,19 +61,18 @@ const likeCard = (req, res, next) => {
     .populate('likes')
     .then((card) => {
       if (!card) {
-        throw new NoFoundError('Карточка не найдена');
+        return next(new NoFoundError('Карточка не найдена'));
       }
 
       return res.status(200).json(card);
     })
     .catch((error) => next(error));
-  return null;
 };
 
 const dislikeCard = (req, res, next) => {
   const { cardId } = req.params;
   if (!mongoose.Types.ObjectId.isValid(cardId)) {
-    throw new ValidationError('Некорректный формат id карточки');
+    return next(new ValidationError('Некорректный формат id карточки'));
   }
 
   Card.findByIdAndUpdate(
@@ -89,13 +83,12 @@ const dislikeCard = (req, res, next) => {
     .populate('likes')
     .then((card) => {
       if (!card) {
-        throw new NoFoundError('Карточка не найдена');
+        return next(new NoFoundError('Карточка не найдена'));
       }
 
       return res.status(200).json(card);
     })
     .catch((error) => next(error));
-  return null;
 };
 
 module.exports = {

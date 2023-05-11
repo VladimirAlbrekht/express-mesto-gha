@@ -5,7 +5,6 @@ const { generateToken } = require('../utils/token');
 
 const ValidationError = require('../errors/validationError');
 const NoFoundError = require('../errors/noFoundError');
-const UserExistError = require('../errors/userExistError');
 const AuthError = require('../errors/authError');
 
 const createUser = async (req, res, next) => {
@@ -18,12 +17,6 @@ const createUser = async (req, res, next) => {
   } = req.body;
 
   try {
-    const existingUser = await User.findOne({ email });
-
-    if (existingUser) {
-      throw new UserExistError('Пользователь с таким email уже существует');
-    }
-
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await User.create({
       name,
@@ -35,11 +28,7 @@ const createUser = async (req, res, next) => {
 
     return res.status(201).json(newUser.toJSON());
   } catch (error) {
-    if (error instanceof UserExistError) {
-      return next(error);
-    }
-
-    if (error.name === 'ValidationError') {
+    if (error instanceof ValidationError) {
       return next(new ValidationError('Некорректные данные при создании пользователя.'));
     }
 
@@ -54,13 +43,13 @@ const login = async (req, res, next) => {
     const user = await User.findOne({ email }).select('+password');
 
     if (!user) {
-      throw new AuthError('Неправильные почта или пароль');
+      return next(new AuthError('Неправильные почта или пароль'));
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      throw new AuthError('Неправильные почта или пароль');
+      return next(new AuthError('Неправильные почта или пароль'));
     }
 
     const token = generateToken({ _id: user._id });
@@ -85,20 +74,21 @@ const getUserById = async (req, res, next) => {
 
   try {
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      throw new ValidationError('Некорректный идентификатор пользователя');
+      return next(new ValidationError('Некорректный идентификатор пользователя'));
     }
 
     const user = await User.findById(userId);
 
     if (!user) {
-      throw new NoFoundError('Запрашиваемый пользователь не найден');
+      return next(new NoFoundError('Запрашиваемый пользователь не найден'));
     }
 
     return res.json(user);
   } catch (error) {
-    if (error instanceof ValidationError || error instanceof NoFoundError) {
-      return next(error);
-    } return next(error);
+    if (error instanceof ValidationError) {
+      return next(new ValidationError('Ошибка валидации'));
+    }
+    return next(error);
   }
 };
 
@@ -107,14 +97,10 @@ const getCurrentUser = async (req, res, next) => {
     const user = await User.findById(req.user._id);
 
     if (!user) {
-      throw new NoFoundError('Пользователь не найден');
-    }
-
-    return res.json(user);
+      return next(new NoFoundError('Пользователь не найден'));
+    } return res.json(user);
   } catch (error) {
-    if (error instanceof NoFoundError) {
-      return res.status(error.statusCode).json({ message: error.message });
-    } return next(error);
+    return next(error);
   }
 };
 
@@ -128,19 +114,13 @@ const updateUser = (req, res, next) => {
   )
     .then((user) => {
       if (!user) {
-        throw new NoFoundError('Пользователь не найден');
-      }
-      if (user._id.toString() !== req.user._id.toString()) {
-        throw new AuthError('Вы не можете редактировать данные других пользователей');
+        return next(new NoFoundError('Пользователь не найден'));
       }
       return res.json(user);
     })
     .catch((error) => {
-      if (error instanceof NoFoundError || error instanceof AuthError) {
-        return res.status(error.statusCode).json({ message: error.message });
-      }
-      if (error.name === 'ValidationError') {
-        return res.status(400).json({ message: 'Ошибка валидации' });
+      if (error instanceof ValidationError) {
+        return next(new ValidationError('Ошибка валидации.'));
       }
       return next(error);
     });
@@ -157,7 +137,7 @@ const updateAvatar = async (req, res, next) => {
     );
 
     if (!user) {
-      throw new NoFoundError('Пользователь не найден');
+      return next(new NoFoundError('Пользователь не найден'));
     }
 
     return res.json(user);

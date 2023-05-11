@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
+const NoFoundError = require('./errors/noFoundError');
 
 const errorHandler = require('./middlewares/errorHandler');
 const rootRouter = require('./routes/index');
@@ -29,6 +30,11 @@ app.use(errors());
 
 // Middleware для обработки ошибок
 app.use(errorHandler);
+
+// Middleware для обработки несуществующих маршрутов
+app.use((req, res, next) => {
+  next(new NoFoundError('Запрашиваемый ресурс не найден'));
+});
 
 app.listen(3000, () => {
   console.log('Server started on port 3000');

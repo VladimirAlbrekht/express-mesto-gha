@@ -1,6 +1,5 @@
 const { celebrate, Joi } = require('celebrate');
 const { ObjectId } = require('mongoose').Types;
-const validator = require('validator');
 
 // вспомогательная ф-ия проверки id
 const checkedId = Joi.string()
@@ -9,19 +8,6 @@ const checkedId = Joi.string()
     if (ObjectId.isValid(value)) return value;
     return helpers.message('Невалидный id');
   });
-
-// вспомогательная ф-ия проверки ссылки
-const checkedLink = Joi.string()
-  .custom((value, helpers) => {
-    if (validator.isURL(value)) return value;
-    return helpers.message('Неверный формат ссылки на изображение');
-  });
-
-const validateAuth = celebrate({
-  headers: Joi.object().keys({
-    authorization: Joi.string().required(),
-  }).unknown(),
-});
 
 const imageRegexLink = /^(https?:\/\/)(www\.)?[\w-]+(\.[\w-]+)+([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?#?$/;
 
@@ -46,18 +32,18 @@ const validateUser = celebrate({
 
 const validateUserProfile = celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-  }),
-});
-
-const validateUserAvatar = celebrate({
-  body: Joi.object().keys({
-    avatar: checkedLink,
+    name: Joi.string().min(2).max(30).required,
+    about: Joi.string().min(2).max(30).required,
   }),
 });
 
 const imageRegexImg = /^https?:\/\/(www\.)?[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.(png|jpg|jpeg|gif)$/;
+
+const validateUserAvatar = celebrate({
+  body: Joi.object().keys({
+    avatar: Joi.string().required().regex(imageRegexImg),
+  }),
+});
 
 const validateSignup = celebrate({
   body: Joi.object().keys({
@@ -82,7 +68,6 @@ module.exports = {
   validateUser,
   validateSignup,
   validateSignin,
-  validateAuth,
   validateUserProfile,
   validateUserAvatar,
 };

@@ -6,6 +6,7 @@ const { generateToken } = require('../utils/token');
 const ValidationError = require('../errors/validationError');
 const NoFoundError = require('../errors/noFoundError');
 const AuthError = require('../errors/authError');
+const UserExistError = require('../errors/userExistError');
 
 const createUser = async (req, res, next) => {
   const {
@@ -31,7 +32,9 @@ const createUser = async (req, res, next) => {
     if (error instanceof ValidationError) {
       return next(new ValidationError('Некорректные данные при создании пользователя.'));
     }
-
+    if (error.code === 11000) {
+      return next(new UserExistError('Пользователь с таким email уже существует'));
+    }
     return next(error);
   }
 };
@@ -82,12 +85,8 @@ const getUserById = async (req, res, next) => {
     if (!user) {
       return next(new NoFoundError('Запрашиваемый пользователь не найден'));
     }
-
     return res.json(user);
   } catch (error) {
-    if (error instanceof ValidationError) {
-      return next(new ValidationError('Ошибка валидации'));
-    }
     return next(error);
   }
 };
@@ -142,6 +141,9 @@ const updateAvatar = async (req, res, next) => {
 
     return res.json(user);
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return next(new ValidationError('Ошибка валидации.'));
+    }
     return next(error);
   }
 };

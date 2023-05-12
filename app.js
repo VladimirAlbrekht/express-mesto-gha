@@ -28,13 +28,13 @@ app.use(rootRouter);
 // Middleware для обработки ошибок celebrate
 app.use(errors());
 
-// Middleware для обработки ошибок
-app.use(errorHandler);
-
 // Middleware для обработки несуществующих маршрутов
 app.use((req, res, next) => {
   next(new NoFoundError('Запрашиваемый ресурс не найден'));
 });
+
+// Middleware для обработки ошибок
+app.use(errorHandler);
 
 app.listen(3000, () => {
   console.log('Server started on port 3000');
